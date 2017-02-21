@@ -51,13 +51,6 @@
   "dependencies": {
     "akasha": "0.0.3",
     "crowdcontrol": "2.0.18",
-    "hanzo.js": "2.2.25",
-    "is-object": "1.0.1",
-    "jquery": "3.1.1",
-    "pug": "2.0.0-beta11",
-    "raf": "3.3.0",
-    "riot": "3.3.0",
-    "riot-observable": "3.0.0",
-    "selectize": "0.12.4"
+    "pug": "2.0.0-beta11"
   }
 }

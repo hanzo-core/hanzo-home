@@ -1,0 +1,19 @@
+style
+  | { style }
+.counter.content
+  .number
+    | { data.get('hanzo-home.order.count') || 0 }
+  .text.title
+    Order Count
+
+.counter.content
+  .number
+    | { data.get('hanzo-home.user.count') || 0 }
+  .text.title
+    User Count
+
+.counter.content
+  .number
+    | { data.get('hanzo-home.subscriber.count') || 0 }
+  .text.title
+    Subscriber Count

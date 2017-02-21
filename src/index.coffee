@@ -18,7 +18,7 @@ module.exports = class Home
         return el
       ->
         opts =
-          tag: 'user.count'
+          tag: 'order.count'
           period: 'total'
 
         daisho.client.counter.search(opts).then((res)->
@@ -28,12 +28,20 @@ module.exports = class Home
         ).catch (err)->
           console.log err.stack
 
+        opts =
+          tag: 'user.count'
+          period: 'total'
+
         daisho.client.counter.search(opts).then((res)->
           console.log 'user.count', res
           daisho.data.set 'hanzo-home.user.count', res.count
           daisho.update()
         ).catch (err)->
           console.log err.stack
+
+        opts =
+          tag: 'subscriber.count'
+          period: 'total'
 
         daisho.client.counter.search(opts).then((res)->
           console.log 'subscriber.count', res

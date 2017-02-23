@@ -51,6 +51,7 @@
   "dependencies": {
     "akasha": "0.0.3",
     "crowdcontrol": "2.0.18",
+    "jstransformer-stylus": "1.3.0",
     "pug": "2.0.0-beta11"
   }
 }

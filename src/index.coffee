@@ -4,7 +4,7 @@ akasha = require 'akasha'
 class HanzoHome extends CrowdControl.Views.Form
   tag: 'hanzo-home'
   html: require './templates/hanzo-home'
-  # style: require './css/app'
+  css:  require './css/app'
   config: {}
 
 HanzoHome.register()
@@ -30,7 +30,23 @@ module.exports = class Home
         @el = el = document.createElement 'hanzo-home'
 
         data = akasha.get 'hanzo-home'
-        daisho.data.set 'hanzo-home', (data || {})
+        daisho.data.set 'hanzo-home', (data || {
+          order:
+            count: 0
+            revenue: 0
+            shipped:
+              cost: 0
+              count: 0
+            refunded:
+              amount: 0
+              count: 0
+            returned:
+              count: 0
+          user:
+            count: 0
+          subscriber:
+            count: 0
+        })
         daisho.mount el
         return el
       ->

@@ -1,4 +1,5 @@
 CrowdControl = require 'crowdcontrol'
+akasha = require 'akasha'
 
 class HanzoHome extends CrowdControl.Views.Form
   tag: 'hanzo-home'
@@ -10,47 +11,42 @@ HanzoHome.register()
 
 module.exports = class Home
   constructor: (daisho, ps, ms)->
+
+    getAndUpdate = (tag, period)->
+      opts =
+        tag: tag
+        period: period
+
+      daisho.client.counter.search(opts).then((res)->
+        console.log tag, res
+        daisho.data.set 'hanzo-home.' + tag, res.count
+        akasha.set 'hanzo-home', daisho.data.get 'hanzo-home'
+        daisho.update()
+      ).catch (err)->
+        console.log err.stack
+
     ps.register 'home',
       ->
         @el = el = document.createElement 'hanzo-home'
-        daisho.data.set 'hanzo-home', {}
+
+        data = akasha.get 'hanzo-home'
+        daisho.data.set 'hanzo-home', (data || {})
         daisho.mount el
         return el
       ->
-        opts =
-          tag: 'order.count'
-          period: 'total'
+        getAndUpdate 'order.count', 'total'
+        getAndUpdate 'order.revenue', 'total'
+        getAndUpdate 'order.shipped.cost', 'total'
+        getAndUpdate 'order.shipped.count', 'total'
+        getAndUpdate 'order.refunded.amount', 'total'
+        getAndUpdate 'order.refunded.count', 'total'
+        getAndUpdate 'order.returned.count', 'total'
+        getAndUpdate 'user.count', 'total'
+        getAndUpdate 'subscriber.count', 'total'
+        getAndUpdate 'product.wycZ3j0kFP0JBv.sold', 'total'
+        getAndUpdate 'product.wycZ3j0kFP0JBv.shipped.count', 'total'
+        getAndUpdate 'product.wycZ3j0kFP0JBv.returned.count', 'total'
 
-        daisho.client.counter.search(opts).then((res)->
-          console.log 'order.count', res
-          daisho.data.set 'hanzo-home.order.count', res.count
-          daisho.update()
-        ).catch (err)->
-          console.log err.stack
-
-        opts =
-          tag: 'user.count'
-          period: 'total'
-
-        daisho.client.counter.search(opts).then((res)->
-          console.log 'user.count', res
-          daisho.data.set 'hanzo-home.user.count', res.count
-          daisho.update()
-        ).catch (err)->
-          console.log err.stack
-
-        opts =
-          tag: 'subscriber.count'
-          period: 'total'
-
-        daisho.client.counter.search(opts).then((res)->
-          console.log 'subscriber.count', res
-          daisho.data.set 'hanzo-home.subscriber.count', res.count
-          daisho.update()
-        ).catch (err)->
-          console.log err.stack
-
-        daisho.update()
         return @el
       ->
 

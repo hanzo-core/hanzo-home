@@ -52,6 +52,9 @@
     "akasha": "0.0.3",
     "crowdcontrol": "2.0.18",
     "jstransformer-stylus": "1.3.0",
-    "pug": "2.0.0-beta11"
+    "object-assign": "4.1.1",
+    "pug": "2.0.0-beta11",
+    "raf": "3.3.0",
+    "tween.js": "16.6.0"
   }
 }

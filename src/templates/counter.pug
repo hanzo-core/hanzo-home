@@ -1,0 +1,8 @@
+.display
+  .number
+    | { format(data.get('hanzo-home.' + field) || 0) }
+  .name
+    | { name }
+.range
+  | { data.get('hanzo-home.rangeStr') }
+

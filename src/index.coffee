@@ -1,45 +1,82 @@
-CrowdControl =  require 'crowdcontrol'
-akasha =        require 'akasha'
-objectAssign =  require 'object-assign'
-Tween =         require 'tween.js'
-raf =           require 'raf'
-d3 =            require 'd3'
-$ =             require 'jquery'
-Promise =       require 'broken'
-
-animate = (time)->
-  raf animate
-  Tween.update time
-
-raf animate
+CrowdControl    = require 'crowdcontrol'
+Promise         = require 'broken'
+Daisho          = require 'daisho'
+akasha          = require 'akasha'
+objectAssign    = require 'object-assign'
+raf             = require 'raf'
+d3              = require 'd3'
+$               = require 'jquery'
+moment          = require 'moment-timezone'
+rfc3339         = Daisho.util.time.rfc3339
+numeral         = require 'numeral'
 
 class HanzoHome extends CrowdControl.Views.Form
   tag: 'hanzo-home'
   html: require './templates/home'
   css:  require './css/app'
   config: {}
-  centsFmtStr: '' # '.00'
-  currencyFn: (n)->
-    fmtStr = @data.get 'hanzo-home.numberFmtStr'
-    fmtStr = '$' + fmtStr + @centsFmtStr
-    return @daisho.util.numeral(n / 100).format fmtStr
+  counters:[
+    ['order.count', 'total', 'Orders']
+    ['order.revenue', 'total', 'Sales']
+    ['order.shipped.cost', 'total', 'Shipping Costs']
+    ['order.shipped.count', 'total', 'Orders Shipped']
+    ['order.refunded.amount', 'total', 'Refunds']
+    ['order.refunded.count', 'total', 'Full Refunds Issued']
+    ['order.returned.count', 'total', 'Returns Issued']
+    ['user.count', 'total', 'Users']
+    ['subscriber.count', 'total', 'Subscribers']
+    ['product.wycZ3j0kFP0JBv.sold', 'total', 'Earbuds Sold']
+    ['product.wycZ3j0kFP0JBv.shipped.count', 'total', 'Earbuds Shipped']
+    ['product.wycZ3j0kFP0JBv.returned.count', 'total', 'Earbuds Returned']
+  ]
+
+  init: ->
+    data = akasha.get 'counters'
+    data = objectAssign {}, data
+    for counter in @counters
+      models = Daisho.Graphics.Model.new()
+      for model in models
+        model.fmt.y = (n)->
+          return parseInt n, 10
+      @data.set 'counters.' + counter[0], models
+
+      currency = (n)->
+        n = n / 100
+        if n < 1000
+          return numeral(n).format '$0'
+        return numeral(n).format '$0a'
+
+      @data.set 'counters.order.revenue.0.fmt.y', currency
+      @data.set 'counters.order.shipped.cost.0.fmt.y', currency
+      @data.set 'counters.order.refunded.amount.0.fmt.y', currency
+
+    super
+
+  refresh: ->
+    for counter in @counters
+      @getAndUpdate.apply @, counter
+    @update()
+
+  getAndUpdate: (tag, period, name)->
+    opts =
+      tag: tag
+      period: period
+
+    @client.counter.search(opts).then((res)=>
+      console.log tag, res
+      path = 'counters.' + tag
+      v = @data.get path
+      if v[0].ys[0] == res.count
+        return
+      v[0].ys[0] = res.count
+      v[0].xs[0] = name
+      v[0].series || 'All Time'
+      @data.set path, v
+      @daisho.update()
+    ).catch (err)->
+      console.log err.stack
 
 HanzoHome.register()
-
-class HanzoHomeCounter extends CrowdControl.Views.View
-  tag: 'hanzo-home-counter'
-  html: require './templates/counter'
-  negative: false
-  format: (n)->
-    if @negative
-      n = -n
-    return @formatFn n
-
-  formatFn: (n)->
-    fmtStr = @data.get 'hanzo-home.numberFmtStr'
-    return @daisho.util.numeral(n).format fmtStr
-
-HanzoHomeCounter.register()
 
 class HanzoHomeGraph extends CrowdControl.Views.View
   tag: 'hanzo-home-graph'
@@ -119,109 +156,47 @@ HanzoHomeGraph.register()
 
 module.exports = class Home
   constructor: (daisho, ps, ms)->
-    rfc3339 = daisho.util.time.rfc3339
-    moment = daisho.util.moment
-
-    getAndUpdate = (tag, period)->
-      opts =
-        tag: tag
-        period: period
-
-      daisho.client.counter.search(opts).then((res)->
-        console.log tag, res
-        oldValue = daisho.data.get 'hanzo-home.' + tag
-        if oldValue == res.count
-          return
-
-        new Tween.Tween
-          count: oldValue
-        .to
-          count: res.count
-        .onUpdate ->
-          daisho.data.set 'hanzo-home.' + tag, parseInt(@count, 10)
-          daisho.update()
-        .onComplete ->
-          daisho.data.set 'hanzo-home.' + tag, res.count
-          daisho.update()
-          akasha.set 'hanzo-home', daisho.data.get 'hanzo-home'
-        .start()
-      ).catch (err)->
-        console.log err.stack
-
+    tag = null
     ps.register 'home',
       ->
         @el = el = document.createElement 'hanzo-home'
 
-        data = akasha.get 'hanzo-home'
-        data = objectAssign {},
-          order:
-            count: 0
-            revenue: 0
-            shipped:
-              cost: 0
-              count: 0
-            refunded:
-              amount: 0
-              count: 0
-            returned:
-              count: 0
-          user:
-            count: 0
-          subscriber:
-            count: 0
-          rangeStr: 'All Time'
-          numberFmtStr: '0,0'
-        , data
-
-        daisho.data.set 'hanzo-home', data
-        daisho.mount el
+        tag = (daisho.mount el)[0]
         return el
       ->
-        getAndUpdate 'order.count', 'total'
-        getAndUpdate 'order.revenue', 'total'
-        getAndUpdate 'order.shipped.cost', 'total'
-        getAndUpdate 'order.shipped.count', 'total'
-        getAndUpdate 'order.refunded.amount', 'total'
-        getAndUpdate 'order.refunded.count', 'total'
-        getAndUpdate 'order.returned.count', 'total'
-        getAndUpdate 'user.count', 'total'
-        getAndUpdate 'subscriber.count', 'total'
-        getAndUpdate 'product.wycZ3j0kFP0JBv.sold', 'total'
-        getAndUpdate 'product.wycZ3j0kFP0JBv.shipped.count', 'total'
-        getAndUpdate 'product.wycZ3j0kFP0JBv.returned.count', 'total'
+        # time = moment new Date()
+        # time.seconds 0
+        # time.minutes 0
+        # time.hour 0
+        # time.add 1, 'day'
 
-        time = moment new Date()
-        time.seconds 0
-        time.minutes 0
-        time.hour 0
-        time.add 1, 'day'
+        # ps = for i in [1..30]
+        #   endTime = time.format rfc3339
+        #   time.subtract 1, 'day'
+        #   startTime = time.format rfc3339
 
-        ps = for i in [1..30]
-          endTime = time.format rfc3339
-          time.subtract 1, 'day'
-          startTime = time.format rfc3339
+        #   opts =
+        #     tag: 'order.revenue'
+        #     period: 'hourly'
+        #     after: startTime
+        #     before: endTime
 
-          opts =
-            tag: 'order.revenue'
-            period: 'hourly'
-            after: startTime
-            before: endTime
+        #   do(endTime)->
+        #     daisho.client.counter.search opts
+        #       .then (res)->
+        #         return [res.count, endTime]
 
-          do(endTime)->
-            daisho.client.counter.search opts
-              .then (res)->
-                return [res.count, endTime]
+        # Promise.settle ps
+        #   .then (data)->
+        #     console.log 'setted', data
+        #     points = data.map (d)->
+        #       return d.value
+        #     points.sort (a,b)->
+        #       return moment(a[1]).diff moment(b[1])
+        #     daisho.data.set 'hanzo-home.points', points
+        #     daisho.update()
 
-        Promise.settle ps
-          .then (data)->
-            console.log 'setted', data
-            points = data.map (d)->
-              return d.value
-            points.sort (a,b)->
-              return moment(a[1]).diff moment(b[1])
-            daisho.data.set 'hanzo-home.points', points
-            daisho.update()
-
+        tag.refresh()
         return @el
       ->
 

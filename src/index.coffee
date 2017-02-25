@@ -42,22 +42,64 @@ class HanzoHome extends CrowdControl.Views.Form
 
       currency = (n)->
         n = n / 100
-        if n < 1000
-          return numeral(n).format '$0'
-        return numeral(n).format '$0a'
+        # if n < 1000
+        #   return numeral(n).format '$0a'
+        return numeral(n).format '$0,0'
 
       @data.set 'counters.order.revenue.0.fmt.y', currency
       @data.set 'counters.order.shipped.cost.0.fmt.y', currency
       @data.set 'counters.order.refunded.amount.0.fmt.y', currency
 
+    @data.set 'summaryChart', Daisho.Graphics.Model.new()
+    @data.set 'summaryChart.0.axis.x.name', 'Date'
+    @data.set 'summaryChart.0.axis.y.name', 'Amount(USD)'
+    @data.set 'summaryChart.0.fmt.y', (n)->
+      return n / 100
+    @data.set 'summaryChart.0.axis.y.ticks', (n)->
+      return numeral(n).format '$0,0'
+
     super
 
   refresh: ->
     for counter in @counters
-      @getAndUpdate.apply @, counter
+      # Counters
+      @refreshCounter.apply @, counter
+
+    # Chart
+    time = moment new Date()
+    time.seconds 0
+    time.minutes 0
+    time.hour 0
+    time.add 1, 'day'
+
+    model = @data.get('summaryChart')[0]
+    model.xs = []
+    model.ys = []
+
+    ps = for i in [0..29]
+      endTime = time.format rfc3339
+      time.subtract 1, 'day'
+      startTime = time.format rfc3339
+
+      opts =
+        tag: 'order.revenue'
+        period: 'hourly'
+        after: startTime
+        before: endTime
+
+      model.xs[i] = endTime
+      do(i)=>
+        @client.counter.search(opts).then (res)->
+          model.ys[i] = res.count
+
+    Promise.settle ps
+      .then (data)=>
+        @data.set 'summaryChart', [model]
+        @update()
+
     @update()
 
-  getAndUpdate: (tag, period, name)->
+  refreshCounter: (tag, period, name)->
     opts =
       tag: tag
       period: period
@@ -70,89 +112,15 @@ class HanzoHome extends CrowdControl.Views.Form
         return
       v[0].ys[0] = res.count
       v[0].xs[0] = name
-      v[0].series || 'All Time'
+      v[0].series = 'All Time'
+      if period != 'total'
+        v[0].series = tag.after + ' ' + tag.before
       @data.set path, v
       @daisho.update()
     ).catch (err)->
       console.log err.stack
 
 HanzoHome.register()
-
-class HanzoHomeGraph extends CrowdControl.Views.View
-  tag: 'hanzo-home-graph'
-  html: require './templates/graph'
-  margin:
-    top: 40
-    right: 40
-    bottom: 50
-    left: 70
-
-  init: ->
-    super
-
-    @on 'mount', =>
-      @svg = svg= d3.select @root
-        .select 'svg'
-
-      @g1 = g1 = svg.append 'g'
-        .attr 'transform', 'translate(' + @margin.left + ',' + @margin.top + ')'
-
-      @g2 = g1.append 'g'
-      @g3 = g1.append 'g'
-      @g4 = g1.append 'path'
-
-    @on 'updated', =>
-      data = @data.get 'hanzo-home.points'
-      if !data
-        return
-
-      width = $(@root).parent().width()
-      height = 300
-
-      @svg
-        .attr 'width', width
-        .attr 'height', height
-
-      width -= @margin.left + @margin.right
-      height -= @margin.top + @margin.bottom
-
-      x = d3.scaleTime()
-        .rangeRound [0, width]
-
-      y = d3.scaleLinear()
-        .rangeRound [height, 0]
-
-      parseTime = d3.timeParse '%Y-%m-%dT%H:%M:%S%Z'
-
-      line = d3.line()
-        .x (d) -> return x parseTime(d[1])
-        .y (d) -> return y d[0]
-
-      x.domain d3.extent data, (d)-> return parseTime d[1]
-        .ticks d3.timeDay.every(1)
-      y.domain d3.extent data, (d)-> return d[0]
-
-      @g2.attr 'transform', 'translate(0,' + height + ')'
-        .call d3.axisBottom(x)
-
-      @g3.call d3.axisLeft(y)
-        .append 'text'
-        .attr 'fill', '#000'
-        .attr 'transform', 'rotate(-90)'
-        .attr 'y', 6
-        .attr 'dy', '0.71em'
-        .attr 'text-anchor', 'end'
-        .text 'Price ($)'
-
-      @g4.datum data
-        .attr 'fill', 'none'
-        .attr 'stroke', 'steelblue'
-        .attr 'stroke-linejoin', 'round'
-        .attr 'stroke-linecap', 'round'
-        .attr 'stroke-width', 1.5
-        .attr 'd', line
-
-HanzoHomeGraph.register()
 
 module.exports = class Home
   constructor: (daisho, ps, ms)->
@@ -164,38 +132,6 @@ module.exports = class Home
         tag = (daisho.mount el)[0]
         return el
       ->
-        # time = moment new Date()
-        # time.seconds 0
-        # time.minutes 0
-        # time.hour 0
-        # time.add 1, 'day'
-
-        # ps = for i in [1..30]
-        #   endTime = time.format rfc3339
-        #   time.subtract 1, 'day'
-        #   startTime = time.format rfc3339
-
-        #   opts =
-        #     tag: 'order.revenue'
-        #     period: 'hourly'
-        #     after: startTime
-        #     before: endTime
-
-        #   do(endTime)->
-        #     daisho.client.counter.search opts
-        #       .then (res)->
-        #         return [res.count, endTime]
-
-        # Promise.settle ps
-        #   .then (data)->
-        #     console.log 'setted', data
-        #     points = data.map (d)->
-        #       return d.value
-        #     points.sort (a,b)->
-        #       return moment(a[1]).diff moment(b[1])
-        #     daisho.data.set 'hanzo-home.points', points
-        #     daisho.update()
-
         tag.refresh()
         return @el
       ->

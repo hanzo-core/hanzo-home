@@ -4,13 +4,17 @@ use 'cake-test'
 use 'cake-publish'
 use 'cake-version'
 
-coffee      = require 'rollup-plugin-coffee-script'
-commonjs    = require 'rollup-plugin-commonjs'
-json        = require 'rollup-plugin-json'
-nodeResolve = require 'rollup-plugin-node-resolve'
-pug         = require 'rollup-plugin-pug'
-rollup      = require 'rollup'
-stylus      = require 'rollup-plugin-stylus'
+autoTransform = require 'rollup-plugin-auto-transform'
+builtins      = require 'rollup-plugin-node-builtins'
+coffee        = require 'rollup-plugin-coffee-script'
+commonjs      = require 'rollup-plugin-commonjs'
+globals       = require 'rollup-plugin-node-globals'
+json          = require 'rollup-plugin-json'
+json          = require 'rollup-plugin-json'
+nodeResolve   = require 'rollup-plugin-node-resolve'
+pug           = require 'rollup-plugin-pug'
+rollup        = require 'rollup'
+stylus        = require 'rollup-plugin-stylus'
 
 postcss      = require 'poststylus'
 autoprefixer = require 'autoprefixer'
@@ -29,15 +33,18 @@ task 'clean', 'clean project', ->
 
 task 'build', 'build project', ->
   plugins = [
+    autoTransform()
+    globals()
+    builtins()
     coffee()
     pug
       pretty:                 true
       compileDebug:           true
-      sourceMap:              true
+      sourceMap:              false
       inlineRuntimeFunctions: false
       staticPattern:          /\S/
     stylus
-      sourceMap: true
+      sourceMap: false
       fn: (style) ->
         style.use lost()
         style.use postcss [
@@ -53,7 +60,7 @@ task 'build', 'build project', ->
       module:  true
     commonjs
       extensions: ['.js', '.coffee']
-      sourceMap: true
+      sourceMap: false
   ]
 
   bundle = yield rollup.rollup

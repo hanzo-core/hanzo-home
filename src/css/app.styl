@@ -1,6 +1,6 @@
 #page
   daisho-graphics-chart
-    display: block
+    display: table
 
     svg
       padding: 0
@@ -11,4 +11,24 @@
     width: 100%
 
   daisho-graphics-counter
+    display: table
     column 1/4 4 0
+
+  .header
+    margin-bottom: 20px
+
+    & > *
+      display: table
+      width: 100%
+      padding: 10px 20px
+
+    h2
+      line-height: 1.4em
+      float: left
+
+  .counters
+    margin-bottom: 20px
+
+  date-range-picker-control
+    display: table
+    float: right

@@ -8,31 +8,39 @@ d3              = require 'd3'
 $               = require 'jquery'
 moment          = require 'moment-timezone'
 rfc3339         = Daisho.util.time.rfc3339
+yyyymmdd        = Daisho.util.time.yyyymmdd
 numeral         = require 'numeral'
 
 class HanzoHome extends CrowdControl.Views.Form
   tag: 'hanzo-home'
   html: require './templates/home'
   css:  require './css/app'
-  config: {}
+  configs:
+    'filter': []
+
   counters:[
-    ['order.count', 'total', 'Orders']
-    ['order.revenue', 'total', 'Sales']
-    ['order.shipped.cost', 'total', 'Shipping Costs']
-    ['order.shipped.count', 'total', 'Orders Shipped']
-    ['order.refunded.amount', 'total', 'Refunds']
-    ['order.refunded.count', 'total', 'Full Refunds Issued']
-    ['order.returned.count', 'total', 'Returns Issued']
-    ['user.count', 'total', 'Users']
-    ['subscriber.count', 'total', 'Subscribers']
-    ['product.wycZ3j0kFP0JBv.sold', 'total', 'Earbuds Sold']
-    ['product.wycZ3j0kFP0JBv.shipped.count', 'total', 'Earbuds Shipped']
-    ['product.wycZ3j0kFP0JBv.returned.count', 'total', 'Earbuds Returned']
+    ['order.count','Orders']
+    ['order.revenue','Sales']
+    ['order.shipped.cost','Shipping Costs']
+    ['order.shipped.count','Orders Shipped']
+    ['order.refunded.amount','Refunds']
+    ['order.refunded.count','Full Refunds Issued']
+    ['order.returned.count','Returns Issued']
+    ['user.count','Users']
+    ['subscriber.count','Subscribers']
+    ['product.wycZ3j0kFP0JBv.sold','Earbuds Sold']
+    ['product.wycZ3j0kFP0JBv.shipped.count','Earbuds Shipped']
+    ['product.wycZ3j0kFP0JBv.returned.count','Earbuds Returned']
   ]
 
+  # Update?
+  filterHash: ''
+
   init: ->
-    data = akasha.get 'counters'
-    data = objectAssign {}, data
+    filter = @data.get 'filter'
+    if !filter
+      @data.set 'filter', [moment('2015-01-01').format(yyyymmdd), moment().format(yyyymmdd)]
+
     for counter in @counters
       models = Daisho.Graphics.Model.new()
       for model in models
@@ -52,57 +60,129 @@ class HanzoHome extends CrowdControl.Views.Form
 
     @data.set 'summaryChart', Daisho.Graphics.Model.new()
     @data.set 'summaryChart.0.axis.x.name', 'Date'
-    @data.set 'summaryChart.0.axis.y.name', 'Amount(USD)'
+    @data.set 'summaryChart.0.axis.y.name', 'Amount'
+    @data.set 'summaryChart.0.series', 'Sales'
+    @data.set 'summaryChart.0.fmt.x', (n)->
+      return moment(n).format rfc3339
     @data.set 'summaryChart.0.fmt.y', (n)->
       return n / 100
+    @data.set 'summaryChart.0.axis.x.ticks', (n)->
+      return moment(n).format 'MM/DD'
     @data.set 'summaryChart.0.axis.y.ticks', (n)->
       return numeral(n).format '$0,0'
+
+    @data.set 'summaryChart.0.tip.x', (n)->
+      return moment(n).format 'MM/DD/YYYY'
+    @data.set 'summaryChart.0.tip.y', (n)->
+      return numeral(n).format '$0,0.00'
+
+    @on 'update', =>
+      @refresh()
 
     super
 
   refresh: ->
+    filter = @data.get 'filter'
+
+    filterHash = JSON.stringify filter
+    if @filterHash == filterHash
+      return
+
+    @filterHash = filterHash
+
     for counter in @counters
       # Counters
-      @refreshCounter.apply @, counter
+      @refreshCounter counter[0], counter[1], filter[0], filter[1]
 
     # Chart
-    time = moment new Date()
-    time.seconds 0
-    time.minutes 0
-    time.hour 0
-    time.add 1, 'day'
+    @refreshChartSeries filter[0], filter[1]
 
-    model = @data.get('summaryChart')[0]
-    model.xs = []
-    model.ys = []
+  refreshChartSeries: (startTime, endTime)->
+    st = moment startTime
+    earliest = moment @parentData.get('orgs')[@parentData.get('activeOrg')].createdAt
+    if st.diff(earliest) < 0
+      st = earliest
 
-    ps = for i in [0..29]
-      endTime = time.format rfc3339
-      time.subtract 1, 'day'
-      startTime = time.format rfc3339
+    st.seconds 0
+    st.minutes 0
+    st.hour 0
+    et = moment endTime
+    et.seconds 0
+    et.minutes 0
+    et.hour 0
+    et.add 1, 'day'
 
-      opts =
-        tag: 'order.revenue'
-        period: 'hourly'
-        after: startTime
-        before: endTime
+    ps = null
+    models = @data.get 'summaryChart'
+    model = models[0]
+    xs = []
+    ys = []
 
-      model.xs[i] = endTime
-      do(i)=>
-        @client.counter.search(opts).then (res)->
-          model.ys[i] = res.count
+    if et.diff(st, 'day') <= 1
+      time = moment startTime
+      ps = for i in [0..23]
+        after = time.format rfc3339
+        time.add 1, 'hour'
+        before = time.format rfc3339
+
+        opts =
+          tag: 'order.revenue'
+          period: 'hourly'
+          after: after
+          before: before
+
+        model.xs[i] = xs[i] = time.format rfc3339
+        model.ys[i] = ys[i] = 0
+        do(i)=>
+          @client.counter.search(opts).then (res)->
+            ys[i] = res.count
+    else
+      time = moment endTime
+      ps = for i in [Math.min(Math.ceil(et.diff(st, 'day')), 90)-2..0]
+        before = time.format rfc3339
+        time.subtract 1, 'day'
+        after = time.format rfc3339
+
+        opts =
+          tag: 'order.revenue'
+          period: 'hourly'
+          after: after
+          before: before
+
+        model.xs[i] = xs[i] = time.format rfc3339
+        model.ys[i] = ys[i] = 0
+        do(i)=>
+          @client.counter.search(opts).then (res)->
+            ys[i] = res.count
 
     Promise.settle ps
       .then (data)=>
-        @data.set 'summaryChart', [model]
-        @update()
+        model.xs = xs
+        model.ys = ys
+        @data.set 'summaryChart', models
 
-    @update()
+        @daisho.update()
 
-  refreshCounter: (tag, period, name)->
+    requestAnimationFrame =>
+      @update()
+
+  refreshCounter: (tag, name, startTime, endTime)->
     opts =
       tag: tag
-      period: period
+
+    st = moment startTime
+    et = moment endTime
+
+    if moment(startTime).format(yyyymmdd)== '2015-01-01' && endTime == moment().format(yyyymmdd)
+      opts.period = 'total'
+    else if et.diff(st, 'days') >= 31
+      opts.period = 'monthy' #ummmm
+      opts.after = st.format rfc3339
+      opts.before = et.format rfc3339
+    else
+      opts.period = 'hourly'
+      opts.after = st.format rfc3339
+      opts.before = et.format rfc3339
 
     @client.counter.search(opts).then((res)=>
       console.log tag, res
@@ -113,8 +193,8 @@ class HanzoHome extends CrowdControl.Views.Form
       v[0].ys[0] = res.count
       v[0].xs[0] = name
       v[0].series = 'All Time'
-      if period != 'total'
-        v[0].series = tag.after + ' ' + tag.before
+      if opts.period != 'total'
+        v[0].series = 'From ' + st.format(yyyymmdd) + ' to ' + et.format(yyyymmdd)
       @data.set path, v
       @daisho.update()
     ).catch (err)->

@@ -1,3 +1,8 @@
+.header.content
+  div
+    h2 Dashboard
+    date-range-picker-control(lookup='filter', after="{ parentData.get('orgs')[parentData.get('activeOrg')].createdAt }")
+
 .counters
   daisho-graphics-counter.content(data="{ data.ref('counters.order.count') }")
   daisho-graphics-counter.content(data="{ data.ref('counters.order.revenue') }")
@@ -12,4 +17,7 @@
   daisho-graphics-counter.content(data="{ data.ref('counters.product.wycZ3j0kFP0JBv.shipped.count') }")
   daisho-graphics-counter.content(data="{ data.ref('counters.product.wycZ3j0kFP0JBv.returned.count') }")
 
-daisho-graphics-chart.content(data="{ data.ref('summaryChart') }")
+.charts.content
+  div
+    h2 Last 90 Days
+    daisho-graphics-chart(data="{ data.ref('summaryChart') }")

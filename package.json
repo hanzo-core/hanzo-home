@@ -65,11 +65,8 @@
     "rollup-plugin-commonjs": "7.0.0",
     "rollup-plugin-json": "2.1.0",
     "rollup-plugin-node-resolve": "2.0.0",
-    "rollup-plugin-postcss": "0.2.0",
     "rollup-plugin-pug": "0.1.2",
-    "rollup-plugin-pug-html": "0.0.2",
     "rollup-plugin-stylus": "1.0.3",
-    "rollup-plugin-stylus-css-modules": "1.2.3",
     "shortcake": "1.1.18",
     "uglify-js": "2.7.5"
   }

@@ -8,7 +8,7 @@ coffee      = require 'rollup-plugin-coffee-script'
 commonjs    = require 'rollup-plugin-commonjs'
 json        = require 'rollup-plugin-json'
 nodeResolve = require 'rollup-plugin-node-resolve'
-pug         = require 'rollup-plugin-pug-html'
+pug         = require 'rollup-plugin-pug'
 rollup      = require 'rollup'
 stylus      = require 'rollup-plugin-stylus'
 
@@ -31,9 +31,11 @@ task 'build', 'build project', ->
   plugins = [
     coffee()
     pug
-      pretty:        true
-      compileDebug:  true
-      sourceMap:     true
+      pretty:                 true
+      compileDebug:           true
+      sourceMap:              true
+      inlineRuntimeFunctions: false
+      staticPattern:          /\S/
     stylus
       sourceMap: true
       fn: (style) ->

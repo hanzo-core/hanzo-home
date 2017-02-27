@@ -57,7 +57,7 @@ task 'build', 'build project', ->
   ]
 
   bundle = yield rollup.rollup
-    entry:    'lib/index.coffee'
+    entry:    'src/index.coffee'
     external: Object.keys pkg.dependencies
     plugins:  plugins
 
@@ -66,8 +66,3 @@ task 'build', 'build project', ->
     dest:      pkg.module
     format:    'es'
     sourceMap: 'inline'
-
-task 'build:min', 'build project', ['build'], ->
-
-task 'watch', 'watch for changes and recompile project', ->
-  exec 'coffee -bcmw -o lib/ src/'

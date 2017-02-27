@@ -76,6 +76,42 @@ class HanzoHome extends CrowdControl.Views.Form
     @data.set 'summaryChart.0.tip.y', (n)->
       return numeral(n).format '$0,0.00'
 
+    @data.set 'summaryChart.1', Daisho.Graphics.Model.newSeries()
+    @data.set 'summaryChart.1.axis.x.name', 'Date'
+    @data.set 'summaryChart.1.axis.y.name', 'Amount'
+    @data.set 'summaryChart.1.series', 'Refunds'
+    @data.set 'summaryChart.1.fmt.x', (n)->
+      return moment(n).format rfc3339
+    @data.set 'summaryChart.1.fmt.y', (n)->
+      return n / 100
+    @data.set 'summaryChart.1.axis.x.ticks', (n)->
+      return moment(n).format 'MM/DD'
+    @data.set 'summaryChart.1.axis.y.ticks', (n)->
+      return numeral(n).format '$0,0'
+
+    @data.set 'summaryChart.1.tip.x', (n)->
+      return moment(n).format 'MM/DD/YYYY'
+    @data.set 'summaryChart.1.tip.y', (n)->
+      return numeral(n).format '$0,0.00'
+
+    @data.set 'summaryChart.2', Daisho.Graphics.Model.newSeries()
+    @data.set 'summaryChart.2.axis.x.name', 'Date'
+    @data.set 'summaryChart.2.axis.y.name', 'Amount'
+    @data.set 'summaryChart.2.series', 'Shipping'
+    @data.set 'summaryChart.2.fmt.x', (n)->
+      return moment(n).format rfc3339
+    @data.set 'summaryChart.2.fmt.y', (n)->
+      return n / 100
+    @data.set 'summaryChart.2.axis.x.ticks', (n)->
+      return moment(n).format 'MM/DD'
+    @data.set 'summaryChart.2.axis.y.ticks', (n)->
+      return numeral(n).format '$0,0'
+
+    @data.set 'summaryChart.2.tip.x', (n)->
+      return moment(n).format 'MM/DD/YYYY'
+    @data.set 'summaryChart.2.tip.y', (n)->
+      return numeral(n).format '$0,0.00'
+
     @on 'update', =>
       @refresh()
 
@@ -95,9 +131,11 @@ class HanzoHome extends CrowdControl.Views.Form
       @refreshCounter counter[0], counter[1], filter[0], filter[1]
 
     # Chart
-    @refreshChartSeries filter[0], filter[1]
+    @refreshChartSeries 'order.revenue', 0, filter[0], filter[1]
+    @refreshChartSeries 'order.refunded.amount', 1, filter[0], filter[1]
+    @refreshChartSeries 'order.shipped.cost', 2, filter[0], filter[1]
 
-  refreshChartSeries: (startTime, endTime)->
+  refreshChartSeries: (tag, seriesIndex, startTime, endTime)->
     st = moment startTime
     earliest = moment @parentData.get('orgs')[@parentData.get('activeOrg')].createdAt
     if st.diff(earliest) < 0
@@ -114,7 +152,7 @@ class HanzoHome extends CrowdControl.Views.Form
 
     ps = null
     models = @data.get 'summaryChart'
-    model = models[0]
+    model = models[seriesIndex]
     xs = []
     ys = []
 
@@ -126,7 +164,7 @@ class HanzoHome extends CrowdControl.Views.Form
         before = time.format rfc3339
 
         opts =
-          tag: 'order.revenue'
+          tag: tag
           period: 'hourly'
           after: after
           before: before
@@ -144,7 +182,7 @@ class HanzoHome extends CrowdControl.Views.Form
         after = time.format rfc3339
 
         opts =
-          tag: 'order.revenue'
+          tag: tag
           period: 'hourly'
           after: after
           before: before

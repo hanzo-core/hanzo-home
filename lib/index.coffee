@@ -241,8 +241,9 @@ class HanzoHome extends CrowdControl.Views.Form
 HanzoHome.register()
 
 module.exports = class Home
-  constructor: (daisho, ps, ms)->
+  constructor: (daisho, ps, ms) ->
     tag = null
+
     ps.register 'home',
       ->
         @el = el = document.createElement 'hanzo-home'

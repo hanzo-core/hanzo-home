@@ -4,7 +4,8 @@
   "description": "Hanzo Home module",
   "main": "lib/",
   "scripts": {
-    "prepublish": "cake build:min",
+    "prepare": "cake build",
+    "prepublishOnly": "cake build:min",
     "test": "cake build && cake test"
   },
   "repository": {

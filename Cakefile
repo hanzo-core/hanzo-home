@@ -61,6 +61,13 @@ task 'build', 'build project', ->
     external: Object.keys pkg.dependencies
     plugins:  plugins
 
+  # CommonJS
+  bundle.write
+    dest:       pkg.main
+    format:     'umd'
+    moduleName: 'referential'
+    sourceMap:  'inline'
+
   # ES module bundle
   bundle.write
     dest:      pkg.module

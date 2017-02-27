@@ -1,11 +1,6 @@
 CrowdControl    = require 'crowdcontrol'
 Promise         = require 'broken'
 Daisho          = require 'daisho'
-akasha          = require 'akasha'
-objectAssign    = require 'object-assign'
-raf             = require 'raf'
-d3              = require 'd3'
-$               = require 'jquery'
 moment          = require 'moment-timezone'
 rfc3339         = Daisho.util.time.rfc3339
 yyyymmdd        = Daisho.util.time.yyyymmdd

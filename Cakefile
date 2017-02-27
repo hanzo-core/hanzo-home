@@ -64,12 +64,11 @@ task 'build', 'build project', ->
   # CommonJS
   bundle.write
     dest:       pkg.main
-    format:     'umd'
-    moduleName: 'referential'
-    sourceMap:  'inline'
+    format:     'cjs'
+    sourceMap:  false
 
   # ES module bundle
   bundle.write
     dest:      pkg.module
     format:    'es'
-    sourceMap: 'inline'
+    sourceMap: false

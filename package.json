@@ -1,7 +1,7 @@
 {
   "name": "hanzo-home",
   "version": "1.0.0",
-  "description": "Modular Dashboard Framework",
+  "description": "Hanzo Home module",
   "main": "lib/",
   "scripts": {
     "prepublish": "cake build:min",
@@ -16,14 +16,7 @@
     "dashboard",
     "ecommerce"
   ],
-  "author": "hanzo, LLC <hi@hanzo.com> (http://hanzo.com)",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/hanzo/hanzo.js/blob/master/LICENSE"
-    }
-  ],
-  "license": "MIT",
+  "author": "Hanzo, Inc <hi@hanzo.io> (http://hanzo.io)",
   "bugs": {
     "url": "https://github.com/hanzo-io/hanzo-home/issues"
   },

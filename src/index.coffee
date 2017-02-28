@@ -1,20 +1,20 @@
-CrowdControl    = require 'crowdcontrol'
-Promise         = require 'broken'
-Daisho          = require 'daisho'
-akasha          = require 'akasha'
-objectAssign    = require 'object-assign'
-raf             = require 'raf'
-d3              = require 'd3'
-$               = require 'jquery'
-moment          = require 'moment-timezone'
-rfc3339         = Daisho.util.time.rfc3339
-yyyymmdd        = Daisho.util.time.yyyymmdd
-numeral         = require 'numeral'
+import CrowdControl from 'crowdcontrol'
+import Daisho       from 'daisho'
+import Promise      from 'broken'
+import moment       from 'moment-timezone'
+import numeral      from 'numeral'
+
+import html from './templates/home.pug'
+import css  from './css/app.styl'
+
+rfc3339  =  Daisho.util.time.rfc3339
+yyyymmdd =  Daisho.util.time.yyyymmdd
 
 class HanzoHome extends CrowdControl.Views.Form
   tag: 'hanzo-home'
-  html: require './templates/home'
-  css:  require './css/app'
+  html: html
+  css:  css
+
   configs:
     'filter': []
 
@@ -241,8 +241,9 @@ class HanzoHome extends CrowdControl.Views.Form
 HanzoHome.register()
 
 module.exports = class Home
-  constructor: (daisho, ps, ms)->
+  constructor: (daisho, ps, ms) ->
     tag = null
+
     ps.register 'home',
       ->
         @el = el = document.createElement 'hanzo-home'

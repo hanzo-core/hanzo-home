@@ -1,12 +1,26 @@
 require 'shortcake'
-settings = require './package'
 
 use 'cake-test'
 use 'cake-publish'
 use 'cake-version'
 
-fs        = require 'fs'
-requisite = require 'requisite'
+autoTransform = require 'rollup-plugin-auto-transform'
+builtins      = require 'rollup-plugin-node-builtins'
+coffee        = require 'rollup-plugin-coffee-script'
+commonjs      = require 'rollup-plugin-commonjs'
+globals       = require 'rollup-plugin-node-globals'
+json          = require 'rollup-plugin-json'
+nodeResolve   = require 'rollup-plugin-node-resolve'
+pug           = require 'rollup-plugin-pug'
+rollup        = require 'rollup'
+stylus        = require 'rollup-plugin-stylus'
+
+postcss      = require 'poststylus'
+autoprefixer = require 'autoprefixer'
+comments     = require 'postcss-discard-comments'
+lost         = require 'lost-stylus'
+
+pkg         = require './package'
 
 option '-b', '--browser [browser]', 'browser to use for tests'
 option '-g', '--grep [filter]',     'test filter'
@@ -14,32 +28,54 @@ option '-t', '--test [test]',       'specify test to run'
 option '-v', '--verbose',           'enable verbose test logging'
 
 task 'clean', 'clean project', ->
-  exec 'rm -rf lib'
+  exec 'rm -rf dist'
 
-task 'build', 'build project', (cb) ->
-  todo = 6
-  done = (err) ->
-    throw err if err?
-    cb() if --todo is 0
+task 'build', 'build project', ->
+  plugins = [
+    autoTransform()
+    globals()
+    builtins()
+    coffee()
+    pug
+      pretty:                 true
+      compileDebug:           true
+      sourceMap:              false
+      inlineRuntimeFunctions: false
+      staticPattern:          /\S/
+    stylus
+      sourceMap: false
+      fn: (style) ->
+        style.use lost()
+        style.use postcss [
+          autoprefixer browsers: '> 1%'
+          'lost'
+          'css-mqpacker'
+          comments removeAll: true
+        ]
+    json()
+    nodeResolve
+      browser: true
+      extensions: ['.js', '.coffee', '.pug', '.styl']
+      module: true
+      jsnext: true
+    commonjs
+      extensions: ['.js', '.coffee']
+      sourceMap: false
+  ]
 
-  exec 'coffee -bcm -o lib/ src/', done
-  exec 'rm -rf lib/templates', done
-  exec 'cp -r src/templates lib/templates', done
-  exec 'rm -rf lib/css', done
-  exec 'cp -r src/css lib/css', done
+  bundle = yield rollup.rollup
+    entry:    'src/index.coffee'
+    external: Object.keys pkg.dependencies
+    plugins:  plugins
 
-  opts =
-    entry:      'src/browser.coffee'
-    compilers:
-      pug: require('pug').compile
-    stripDebug: true
+  # CommonJS
+  bundle.write
+    dest:       pkg.main
+    format:     'cjs'
+    sourceMap:  false
 
-  requisite.bundle opts, (err, bundle) ->
-    return done err if err?
-    fs.writeFile settings.name + '.js', (bundle.toString opts), 'utf8', done
-
-task 'build:min', 'build project', ['build'], ->
-  exec "uglifyjs #{settings.name}.js --compress --mangle --lint=false > #{settings.name}.min.js"
-
-task 'watch', 'watch for changes and recompile project', ->
-  exec 'coffee -bcmw -o lib/ src/'
+  # ES module bundle
+  bundle.write
+    dest:      pkg.module
+    format:    'es'
+    sourceMap: false

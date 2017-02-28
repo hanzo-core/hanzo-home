@@ -56,7 +56,8 @@ task 'build', 'build project', ->
     nodeResolve
       browser: true
       extensions: ['.js', '.coffee', '.pug', '.styl']
-      module:  true
+      module: true
+      jsnext: true
     commonjs
       extensions: ['.js', '.coffee']
       sourceMap: false

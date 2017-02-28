@@ -240,7 +240,7 @@ class HanzoHome extends CrowdControl.Views.Form
 
 HanzoHome.register()
 
-module.exports = class Home
+export default class Home
   constructor: (daisho, ps, ms) ->
     tag = null
 

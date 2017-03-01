@@ -227,7 +227,7 @@ class HanzoHome extends Daisho.Views.Dynamic
 HanzoHome.register()
 
 export default class Home
-  constructor: (daisho, ps, ms) ->
+  constructor: (daisho, ps, ms, cs)->
     tag = null
 
     ps.register 'home',

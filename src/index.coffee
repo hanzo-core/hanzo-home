@@ -1,4 +1,3 @@
-import CrowdControl from 'crowdcontrol'
 import Daisho       from 'daisho'
 import Promise      from 'broken'
 import moment       from 'moment-timezone'
@@ -10,7 +9,7 @@ import css  from './css/app.styl'
 rfc3339  =  Daisho.util.time.rfc3339
 yyyymmdd =  Daisho.util.time.yyyymmdd
 
-class HanzoHome extends CrowdControl.Views.Form
+class HanzoHome extends Daisho.Views.Dynamic
   tag: 'hanzo-home'
   html: html
   css:  css
@@ -33,8 +32,7 @@ class HanzoHome extends CrowdControl.Views.Form
     ['product.wycZ3j0kFP0JBv.returned.count','Earbuds Returned']
   ]
 
-  # Update?
-  filterHash: ''
+  _dataStaleField: 'filter'
 
   init: ->
     filter = @data.get 'filter'
@@ -112,20 +110,10 @@ class HanzoHome extends CrowdControl.Views.Form
     @data.set 'summaryChart.2.tip.y', (n)->
       return numeral(n).format '$0,0.00'
 
-    @on 'update', =>
-      @refresh()
-
     super
 
-  refresh: ->
+  _refresh: ->
     filter = @data.get 'filter'
-
-    filterHash = JSON.stringify filter
-    if @filterHash == filterHash
-      return
-
-    @filterHash = filterHash
-
     for counter in @counters
       # Counters
       @refreshCounter counter[0], counter[1], filter[0], filter[1]
@@ -169,9 +157,9 @@ class HanzoHome extends CrowdControl.Views.Form
           after: after
           before: before
 
-        model.xs[i] = xs[i] = time.format rfc3339
+        model.xs[i] = xs[i] = after
         model.ys[i] = ys[i] = 0
-        do(i)=>
+        do(i, opts)=>
           @client.counter.search(opts).then (res)->
             ys[i] = res.count
     else
@@ -187,9 +175,9 @@ class HanzoHome extends CrowdControl.Views.Form
           after: after
           before: before
 
-        model.xs[i] = xs[i] = time.format rfc3339
+        model.xs[i] = xs[i] = before
         model.ys[i] = ys[i] = 0
-        do(i)=>
+        do(i, opts)=>
           @client.counter.search(opts).then (res)->
             ys[i] = res.count
 
@@ -226,8 +214,6 @@ class HanzoHome extends CrowdControl.Views.Form
       console.log tag, res
       path = 'counters.' + tag
       v = @data.get path
-      if v[0].ys[0] == res.count
-        return
       v[0].ys[0] = res.count
       v[0].xs[0] = name
       v[0].series = 'All Time'

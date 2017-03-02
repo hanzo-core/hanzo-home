@@ -8,6 +8,7 @@ autoTransform = require 'rollup-plugin-auto-transform'
 builtins      = require 'rollup-plugin-node-builtins'
 coffee        = require 'rollup-plugin-coffee-script'
 commonjs      = require 'rollup-plugin-commonjs'
+filesize      = require 'rollup-plugin-filesize'
 globals       = require 'rollup-plugin-node-globals'
 json          = require 'rollup-plugin-json'
 nodeResolve   = require 'rollup-plugin-node-resolve'
@@ -61,6 +62,7 @@ task 'build', 'build project', ->
     commonjs
       extensions: ['.js', '.coffee']
       sourceMap: false
+    filesize()
   ]
 
   bundle = yield rollup.rollup
@@ -79,3 +81,12 @@ task 'build', 'build project', ->
     dest:      pkg.module
     format:    'es'
     sourceMap: false
+
+task 'watch', 'watch project', ->
+  build = (filename) ->
+    console.log filename, 'modified, rebuilding'
+    invoke 'build' if not running 'build'
+  watch 'src/css/*.styl', build
+  watch 'src/templates/*.pug', build
+  watch 'src/*.coffee', build
+  watch 'node_modules/', build, watchSymlink: true

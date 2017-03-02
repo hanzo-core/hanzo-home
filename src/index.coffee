@@ -32,7 +32,7 @@ class HanzoHome extends Daisho.Views.Dynamic
     ['product.wycZ3j0kFP0JBv.returned.count','Earbuds Returned']
   ]
 
-  _dataStaleField: 'filter'
+  _dataStaleField: 'filter34'
 
   init: ->
     filter = @data.get 'filter'

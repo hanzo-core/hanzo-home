@@ -13,6 +13,7 @@ class HanzoHome extends Daisho.Views.Dynamic
   tag: 'hanzo-home'
   html: html
   css:  css
+  days: 90
 
   configs:
     'filter': []
@@ -32,7 +33,7 @@ class HanzoHome extends Daisho.Views.Dynamic
     ['product.wycZ3j0kFP0JBv.returned.count','Earbuds Returned']
   ]
 
-  _dataStaleField: 'filter34'
+  _dataStaleField: 'filter'
 
   init: ->
     filter = @data.get 'filter'
@@ -59,6 +60,7 @@ class HanzoHome extends Daisho.Views.Dynamic
     @data.set 'summaryChart', Daisho.Graphics.Model.new()
     @data.set 'summaryChart.0.axis.x.name', 'Date'
     @data.set 'summaryChart.0.axis.y.name', 'Amount'
+    @data.set 'summaryChart.0.type', 'line'
     @data.set 'summaryChart.0.series', 'Sales'
     @data.set 'summaryChart.0.fmt.x', (n)->
       return moment(n).format rfc3339
@@ -77,6 +79,7 @@ class HanzoHome extends Daisho.Views.Dynamic
     @data.set 'summaryChart.1', Daisho.Graphics.Model.newSeries()
     @data.set 'summaryChart.1.axis.x.name', 'Date'
     @data.set 'summaryChart.1.axis.y.name', 'Amount'
+    @data.set 'summaryChart.1.type', 'line'
     @data.set 'summaryChart.1.series', 'Refunds'
     @data.set 'summaryChart.1.fmt.x', (n)->
       return moment(n).format rfc3339
@@ -95,6 +98,7 @@ class HanzoHome extends Daisho.Views.Dynamic
     @data.set 'summaryChart.2', Daisho.Graphics.Model.newSeries()
     @data.set 'summaryChart.2.axis.x.name', 'Date'
     @data.set 'summaryChart.2.axis.y.name', 'Amount'
+    @data.set 'summaryChart.2.type', 'line'
     @data.set 'summaryChart.2.series', 'Shipping'
     @data.set 'summaryChart.2.fmt.x', (n)->
       return moment(n).format rfc3339
@@ -110,20 +114,12 @@ class HanzoHome extends Daisho.Views.Dynamic
     @data.set 'summaryChart.2.tip.y', (n)->
       return numeral(n).format '$0,0.00'
 
+    @data.set 'summaryChart.3', Daisho.Graphics.Model.newSeries()
+    @data.set 'summaryChart.3.type', 'notes'
+
     super
 
-  _refresh: ->
-    filter = @data.get 'filter'
-    for counter in @counters
-      # Counters
-      @refreshCounter counter[0], counter[1], filter[0], filter[1]
-
-    # Chart
-    @refreshChartSeries 'order.revenue', 0, filter[0], filter[1]
-    @refreshChartSeries 'order.refunded.amount', 1, filter[0], filter[1]
-    @refreshChartSeries 'order.shipped.cost', 2, filter[0], filter[1]
-
-  refreshChartSeries: (tag, seriesIndex, startTime, endTime)->
+  generateTimestamps: (startTime, endTime)->
     st = moment startTime
     earliest = moment @parentData.get('orgs')[@parentData.get('activeOrg')].createdAt
     if st.diff(earliest) < 0
@@ -138,48 +134,86 @@ class HanzoHome extends Daisho.Views.Dynamic
     et.hour 0
     et.add 1, 'day'
 
-    ps = null
+    @days = Math.min Math.ceil(et.diff(st, 'day')), 90
+
+    timestamps = []
+    if et.diff(st, 'day') <= 1
+      time = moment st
+      for i in [0..23]
+        after = time.format rfc3339
+        time.add 1, 'hour'
+        before = time.format rfc3339
+        timestamps[i] = [after, before]
+    else
+      time = moment et
+      for i in [@days-1..0]
+        before = time.format rfc3339
+        time.subtract 1, 'day'
+        after = time.format rfc3339
+        timestamps[i] = [after, before]
+
+    return timestamps
+
+  _refresh: ->
+    filter = @data.get 'filter'
+    for counter in @counters
+      # Counters
+      @refreshCounter counter[0], counter[1], filter[0], filter[1]
+
+    # Chart
+    @refreshChartSeries 'order.revenue', 0, filter[0], filter[1]
+    @refreshChartSeries 'order.refunded.amount', 1, filter[0], filter[1]
+    @refreshChartSeries 'order.shipped.cost', 2, filter[0], filter[1]
+    @refreshNotes 3, filter[0], filter[1]
+    return
+
+  refreshNotes: (seriesIndex, startTime, endTime)->
+    models = @data.get 'summaryChart'
+    model = models[seriesIndex]
+    model.xs = xs = []
+    model.ys = ys = []
+
+    timestamps = @generateTimestamps startTime, endTime
+    opts =
+      after:    timestamps[0][0]
+      before:   timestamps[timestamps.length-1][1]
+
+    @client.note.search(opts).then (res)=>
+      for i, timestamp of timestamps
+        # this is horrible
+        for note in res
+          # using [) is weird because we use the opposite system on the server
+          if moment(note.time).isBetween timestamp[0], timestamp[1], null, '[)'
+            xs.push timestamp[0]
+            ys.push note.source + '@' + note.time + '\n' + note.message
+
+      @data.set 'summaryChart', models
+
+      @daisho.update()
+
+    requestAnimationFrame =>
+      @update()
+
+  refreshChartSeries: (tag, seriesIndex, startTime, endTime)->
     models = @data.get 'summaryChart'
     model = models[seriesIndex]
     xs = []
     ys = []
 
-    if et.diff(st, 'day') <= 1
-      time = moment startTime
-      ps = for i in [0..23]
-        after = time.format rfc3339
-        time.add 1, 'hour'
-        before = time.format rfc3339
+    timestamps = @generateTimestamps startTime, endTime
 
-        opts =
-          tag: tag
-          period: 'hourly'
-          after: after
-          before: before
+    ps = for i, timestamp of timestamps
+      opts =
+        tag: tag
+        period: 'hourly'
+        after: timestamp[0]
+        before: timestamp[1]
 
-        model.xs[i] = xs[i] = after
-        model.ys[i] = ys[i] = 0
-        do(i, opts)=>
-          @client.counter.search(opts).then (res)->
-            ys[i] = res.count
-    else
-      time = moment endTime
-      ps = for i in [Math.min(Math.ceil(et.diff(st, 'day')), 90)-2..0]
-        before = time.format rfc3339
-        time.subtract 1, 'day'
-        after = time.format rfc3339
-
-        opts =
-          tag: tag
-          period: 'hourly'
-          after: after
-          before: before
-
-        model.xs[i] = xs[i] = before
-        model.ys[i] = ys[i] = 0
-        do(i, opts)=>
-          @client.counter.search(opts).then (res)->
-            ys[i] = res.count
+      model.xs[i] = xs[i] = timestamp[0]
+      model.ys[i] = ys[i] = 0
+      do(i, opts)=>
+        @client.counter.search(opts).then (res)->
+          ys[i] = res.count
 
     Promise.settle ps
       .then (data)=>

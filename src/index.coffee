@@ -1,7 +1,7 @@
-import Daisho       from 'daisho'
-import Promise      from 'broken'
-import moment       from 'moment-timezone'
-import numeral      from 'numeral'
+import Daisho  from 'daisho'
+import Promise from 'broken'
+import moment  from 'moment-timezone'
+import numeral from 'numeral'
 
 import html from './templates/home.pug'
 import css  from './css/app.styl'

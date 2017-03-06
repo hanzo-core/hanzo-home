@@ -36,9 +36,9 @@ class HanzoHome extends Daisho.Views.Dynamic
   _dataStaleField: 'filter'
 
   init: ->
-    filter = @data.get 'filter'
-    if !filter
-      @data.set 'filter', [moment('2015-01-01').format(yyyymmdd), moment().format(yyyymmdd)]
+    # filter = @data.get 'filter'
+    # if !filter
+    @data.set 'filter', [moment('2015-01-01').format(yyyymmdd), moment().format(yyyymmdd)]
 
     for counter in @counters
       models = Daisho.Graphics.Model.new()

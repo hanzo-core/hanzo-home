@@ -25,9 +25,10 @@
   "homepage": "https://github.com/hanzo-io/hanzo-home#readme",
   "dependencies": {
     "akasha": "0.0.4",
-    "autoprefixer": "6.7.5",
+    "autoprefixer": "6.7.6",
     "broken": "0.1.9",
     "coffee-script": "1.12.4",
+    "coveralls": "2.12.0",
     "crowdcontrol": "2.0.19",
     "css-mqpacker": "5.0.1",
     "daisho": "1.0.2",

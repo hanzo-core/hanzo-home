@@ -1,6 +1,6 @@
 {
   "name": "hanzo-home",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Hanzo Home module",
   "main": "dist/hanzo-home.js",
   "module": "dist/hanzo-home.mjs",

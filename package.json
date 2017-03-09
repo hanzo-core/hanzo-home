@@ -24,14 +24,13 @@
   },
   "homepage": "https://github.com/hanzo-io/hanzo-home#readme",
   "dependencies": {
-    "akasha": "0.0.9",
+    "akasha": "0.0.10",
     "broken": "0.1.9",
     "crowdcontrol": "2.1.2",
     "daisho": "1.2.1",
     "es-object-assign": "4.1.3",
     "es-raf": "3.3.1",
     "es-tween": "0.1.0",
-    "handroll": "0.4.0",
     "moment": "2.17.1",
     "moment-timezone": "0.5.11",
     "numeral": "2.0.4"
@@ -47,7 +46,7 @@
     "coffee-coverage": "1.0.1",
     "coffee-script": "1.12.4",
     "coveralls": "2.12.0",
-    "handroll": "0.2.11",
+    "handroll": "0.4.5",
     "mz": "2.6.0",
     "pug": "2.0.0-beta11",
     "shortcake": "1.2.5"

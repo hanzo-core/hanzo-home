@@ -185,7 +185,7 @@ class HanzoHome extends Daisho.Views.Dynamic
           # using [) is weird because we use the opposite system on the server
           if moment(note.time).isBetween timestamp[0], timestamp[1], null, '[)'
             xs.push timestamp[0]
-            ys.push note.source + '@' + note.time + '\n' + note.message
+            ys.push 'note id: ' +  note.id + '\nfrom: ' + note.source + '@' + note.time + '\n' + note.message
 
       @data.set 'summaryChart', models
 

@@ -161,11 +161,19 @@ class HanzoHome extends Daisho.Views.Dynamic
       @refreshCounter counter[0], counter[1], filter[0], filter[1]
 
     # Chart
-    @refreshChartSeries 'order.revenue', 0, filter[0], filter[1]
-    @refreshChartSeries 'order.refunded.amount', 1, filter[0], filter[1]
-    @refreshChartSeries 'order.shipped.cost', 2, filter[0], filter[1]
-    @refreshNotes 3, filter[0], filter[1]
-    return
+    ps1 = @refreshChartSeries 'order.revenue', 0, filter[0], filter[1]
+    ps2 = @refreshChartSeries 'order.refunded.amount', 1, filter[0], filter[1]
+    ps3 = @refreshChartSeries 'order.shipped.cost', 2, filter[0], filter[1]
+    p1 = @refreshNotes 3, filter[0], filter[1]
+
+    ps = ps1.concat(ps2).concat(ps3)
+    ps.push p1
+
+    Promise.settle ps
+      .then (data)=>
+        @scheduleUpdate()
+
+    return true
 
   refreshNotes: (seriesIndex, startTime, endTime)->
     models = @data.get 'summaryChart'
@@ -178,7 +186,8 @@ class HanzoHome extends Daisho.Views.Dynamic
       after:    timestamps[0][0]
       before:   timestamps[timestamps.length-1][1]
 
-    @client.note.search(opts).then (res)=>
+    @scheduleUpdate()
+    return @client.note.search(opts).then (res)=>
       for i, timestamp of timestamps
         # this is horrible
         for note in res
@@ -188,11 +197,6 @@ class HanzoHome extends Daisho.Views.Dynamic
             ys.push 'note id: ' +  note.id + '\nfrom: ' + note.source + '@' + note.time + '\n' + note.message
 
       @data.set 'summaryChart', models
-
-      @daisho.update()
-
-    requestAnimationFrame =>
-      @update()
 
   refreshChartSeries: (tag, seriesIndex, startTime, endTime)->
     models = @data.get 'summaryChart'
@@ -215,16 +219,15 @@ class HanzoHome extends Daisho.Views.Dynamic
         @client.counter.search(opts).then (res)->
           ys[i] = res.count
 
+    @scheduleUpdate()
+
     Promise.settle ps
       .then (data)=>
         model.xs = xs
         model.ys = ys
         @data.set 'summaryChart', models
 
-        @daisho.update()
-
-    requestAnimationFrame =>
-      @update()
+    return ps
 
   refreshCounter: (tag, name, startTime, endTime)->
     opts =
@@ -254,7 +257,7 @@ class HanzoHome extends Daisho.Views.Dynamic
       if opts.period != 'total'
         v[0].series = 'From ' + st.format(yyyymmdd) + ' to ' + et.format(yyyymmdd)
       @data.set path, v
-      @daisho.update()
+      @scheduleUpdate()
     ).catch (err)->
       console.log err.stack
 

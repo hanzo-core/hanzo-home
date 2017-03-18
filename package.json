@@ -42,5 +42,8 @@
     "numeral": "2.0.4",
     "pug": "2.0.0-beta11",
     "shortcake": "1.2.5"
+  },
+  "devDependencies": {
+    "cake-outdated": "0.1.8"
   }
 }

@@ -1,7 +1,9 @@
 require 'shortcake'
 
-use 'cake-test'
+use 'cake-bundle'
+use 'cake-outdated'
 use 'cake-publish'
+use 'cake-test'
 use 'cake-version'
 
 task 'clean', 'clean project', ->

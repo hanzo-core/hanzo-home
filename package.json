@@ -28,7 +28,7 @@
     "akasha": "0.1.0",
     "broken": "0.1.10",
     "cake-bundle": "0.1.8",
-    "cake-outdated": "0.1.9",
+    "cake-outdated": "0.1.12",
     "cake-publish": "0.1.5",
     "cake-test": "0.1.0",
     "cake-version": "0.1.9",
@@ -42,8 +42,5 @@
     "numeral": "2.0.4",
     "pug": "2.0.0-beta11",
     "shortcake": "1.2.5"
-  },
-  "devDependencies": {
-    "cake-outdated": "0.1.9"
   }
 }

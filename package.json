@@ -27,7 +27,7 @@
   "dependencies": {
     "akasha": "0.1.1",
     "broken": "0.1.11",
-    "cake-bundle": "0.2.10",
+    "cake-bundle": "0.2.11",
     "cake-outdated": "0.1.15",
     "cake-publish": "0.1.10",
     "cake-test": "0.1.0",

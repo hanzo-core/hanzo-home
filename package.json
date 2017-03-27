@@ -39,7 +39,7 @@
     "es-tween": "0.1.0",
     "moment": "2.18.1",
     "moment-timezone": "0.5.11",
-    "numeral": "2.0.4",
+    "numeral": "2.0.6",
     "pug": "2.0.0-beta11",
     "shortcake": "1.2.5"
   }

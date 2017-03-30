@@ -31,7 +31,7 @@
     "cake-outdated": "0.1.16",
     "cake-publish": "0.1.10",
     "cake-test": "0.1.0",
-    "cake-version": "0.1.11",
+    "cake-version": "0.1.14",
     "coffee-script": "1.12.4",
     "daisho": "1.2.16",
     "es-object-assign": "4.1.3",
@@ -41,6 +41,6 @@
     "moment-timezone": "0.5.11",
     "numeral": "2.0.6",
     "pug": "2.0.0-beta11",
-    "shortcake": "1.2.5"
+    "shortcake": "1.2.7"
   }
 }

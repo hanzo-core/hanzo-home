@@ -266,16 +266,17 @@ HanzoHome.register()
 export default class Home
   constructor: (daisho, ps, ms, cs)->
     tag = null
+    el = null
 
     ps.register 'home',
       ->
-        @el = el = document.createElement 'hanzo-home'
+        el = document.createElement 'hanzo-home'
 
         tag = (daisho.mount el)[0]
         return el
       ->
         tag.refresh()
-        return @el
+        return el
       ->
 
     ms.register 'Home', ->

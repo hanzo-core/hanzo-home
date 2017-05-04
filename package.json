@@ -42,5 +42,9 @@
     "numeral": "2.0.6",
     "pug": "2.0.0-beta11",
     "shortcake": "1.2.8"
+  },
+  "devDependencies": {
+    "sake-cli": "0.5.5",
+    "sake-outdated": "0.1.22"
   }
 }

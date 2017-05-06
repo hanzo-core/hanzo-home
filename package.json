@@ -6,8 +6,8 @@
   "module": "dist/hanzo-home.mjs",
   "jsnext:main": "dist/hanzo-home.mjs",
   "scripts": {
-    "postinstall": "cake build",
-    "test": "cake build && cake test"
+    "postinstall": "sake build",
+    "test": "sake build && sake test"
   },
   "repository": {
     "type": "git",

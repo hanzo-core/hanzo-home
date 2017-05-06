@@ -6,8 +6,10 @@
   "module": "dist/hanzo-home.mjs",
   "jsnext:main": "dist/hanzo-home.mjs",
   "scripts": {
+    "build": "sake build",
     "postinstall": "sake build",
-    "test": "sake build && sake test"
+    "pretest": "sake build",
+    "test": "sake test"
   },
   "repository": {
     "type": "git",
@@ -28,7 +30,7 @@
     "akasha": "0.1.7",
     "broken": "0.1.13",
     "coffee-script": "1.12.5",
-    "daisho": "1.2.24",
+    "daisho": "1.2.25",
     "es-object-assign": "4.1.4",
     "es-raf": "3.3.1",
     "es-tween": "0.1.0",

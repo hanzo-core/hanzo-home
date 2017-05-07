@@ -27,10 +27,10 @@
   },
   "homepage": "https://github.com/hanzo-core/hanzo-home#readme",
   "dependencies": {
-    "akasha": "^0.1.8",
+    "akasha": "^0.1.9",
     "broken": "^0.1.13",
     "coffee-script": "1.12.5",
-    "daisho": "^1.2.39",
+    "daisho": "^1.2.40",
     "es-object-assign": "^4.1.4",
     "es-raf": "^3.3.1",
     "es-tween": "^0.1.0",

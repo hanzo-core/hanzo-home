@@ -30,7 +30,7 @@
     "akasha": "^0.1.8",
     "broken": "^0.1.13",
     "coffee-script": "1.12.5",
-    "daisho": "^1.2.29",
+    "daisho": "^1.2.39",
     "es-object-assign": "^4.1.4",
     "es-raf": "^3.3.1",
     "es-tween": "^0.1.0",
@@ -38,10 +38,10 @@
     "moment-timezone": "0.5.13",
     "numeral": "2.0.6",
     "pug": "2.0.0-rc.1",
-    "sake-bundle": "^0.4.21",
-    "sake-cli": "^0.5.5",
-    "sake-outdated": "^0.1.22",
-    "sake-publish": "^0.1.12",
+    "sake-bundle": "^0.5.1",
+    "sake-cli": "^0.5.6",
+    "sake-outdated": "^0.1.27",
+    "sake-publish": "^0.1.16",
     "sake-test": "^0.1.5",
     "sake-version": "^0.1.19"
   }

@@ -29,7 +29,7 @@
   "dependencies": {
     "akasha": "^0.1.9",
     "broken": "^0.1.13",
-    "coffee-script": "1.12.6",
+    "coffeescript": "^1.12.6 < 2",
     "daisho": "^1.2.40",
     "es-object-assign": "^4.1.4",
     "es-raf": "^3.3.1",
@@ -40,7 +40,7 @@
     "pug": "2.0.0-rc.1",
     "sake-bundle": "^0.6.0",
     "sake-cli": "^0.5.6",
-    "sake-outdated": "^0.1.27",
+    "sake-outdated": "^0.3.0",
     "sake-publish": "^0.1.16",
     "sake-test": "^0.1.5",
     "sake-version": "^0.1.19"

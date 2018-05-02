@@ -29,7 +29,7 @@
   "dependencies": {
     "akasha": "^0.1.10",
     "broken": "^0.1.13",
-    "coffeescript": "1.12.7 < 2",
+    "coffeescript": "^2",
     "daisho": "^1.2.56",
     "es-object-assign": "^4.1.4",
     "es-raf": "^3.3.1",
